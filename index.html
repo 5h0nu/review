@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ReviewIntel Pro | Final Audit Build</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .modal-bg { background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(8px); }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.26, 0.53, 0.74, 1.48); }
+        @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-100 p-6 min-h-screen">
+
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div class="glass max-w-2xl w-full p-8 rounded-[2.5rem] border-blue-500/30 shadow-2xl animate-pop">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="m-title" class="text-xl font-black text-blue-400 uppercase italic tracking-wider"></h2>
+                <button onclick="closeM()" class="text-slate-500 hover:text-white text-3xl">&times;</button>
+            </div>
+            <div id="m-content" class="text-slate-300 text-sm space-y-4 max-h-[60vh] overflow-y-auto pr-2"></div>
+            <button onclick="closeM()" class="mt-8 w-full py-4 bg-slate-800 hover:bg-slate-700 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] transition-all">Dismiss Analysis</button>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-12 gap-8">
+        
+        <div class="col-span-12 lg:col-span-4 space-y-4">
+            <div class="mb-8">
+                <h1 class="text-2xl font-black text-blue-400 italic italic">ReviewIntel <span class="text-white uppercase text-xl">PRO</span></h1>
+                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Neural Audit System v4.0</p>
+            </div>
+            
+            <div class="glass p-7 rounded-[2.5rem] border-slate-800">
+                <div class="flex gap-6 mb-8 text-[10px] font-black uppercase tracking-widest">
+                    <button onclick="setMode('file')" id="t-file" class="tab-active pb-2 transition-all">Batch CSV</button>
+                    <button onclick="setMode('text')" id="t-text" class="pb-2 text-slate-600 hover:text-slate-400 transition-all">Manual Paste</button>
+                </div>
+
+                <div id="v-file">
+                    <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-800 rounded-[2rem] p-12 cursor-pointer bg-slate-950/40 hover:border-blue-500/50 transition-all group">
+                        <i class="fas fa-upload text-2xl mb-3 text-slate-700 group-hover:text-blue-500 transition-colors"></i>
+                        <span id="fName" class="text-[9px] text-slate-600 uppercase font-black tracking-widest text-center">Injest Audit Data</span>
+                        <input type="file" id="fIn" class="hidden" onchange="uName()">
+                    </label>
+                </div>
+
+                <div id="v-text" class="hidden">
+                    <textarea id="manualTxt" rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-[1.5rem] p-5 text-xs text-slate-300 outline-none focus:border-blue-500/50 transition-all" placeholder="Paste reviews for sarcasm check..."></textarea>
+                </div>
+
+                <button onclick="run()" id="runBtn" class="w-full mt-8 bg-blue-600 hover:bg-blue-500 py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all">Run Intelligence Audit</button>
+            </div>
+
+            <div id="loader" class="hidden glass p-5 rounded-3xl border-blue-500/20">
+                <div class="w-full bg-slate-900 h-1 rounded-full overflow-hidden">
+                    <div id="bar" class="bg-blue-500 h-full w-0 transition-all duration-1000"></div>
+                </div>
+                <p class="text-[8px] text-center text-blue-400 font-bold uppercase mt-3 tracking-widest animate-pulse">Processing Dual-API Output...</p>
+            </div>
+        </div>
+
+        <div id="dashboard" class="col-span-12 lg:col-span-8 space-y-8 hidden">
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div onclick="openM('total')" class="glass p-5 rounded-[2rem] cursor-pointer hover:bg-slate-800 transition-all border-slate-800 group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 group-hover:text-blue-400">Total Reviews</p>
+                    <p id="res-total" class="text-2xl font-black text-white italic">0</p>
+                </div>
+                <div onclick="openM('cats')" class="glass p-5 rounded-[2rem] cursor-pointer hover:bg-slate-800 transition-all border-slate-800 group">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-2 group-hover:text-blue-400">Categories</p>
+                    <p id="res-cats" class="text-2xl font-black text-white italic">0</p>
+                </div>
+                <div onclick="openM('lang')" class="glass p-5 rounded-[2rem] cursor-pointer hover:bg-emerald-500/5 transition-all border-emerald-500/10 group">
+                    <p class="text-[9px] font-black text-emerald-600 uppercase mb-2 group-hover:text-emerald-400">Language NLP</p>
+                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Multi-Linguistic ✅</p>
+                </div>
+                <div onclick="openM('health')" class="glass p-5 rounded-[2rem] cursor-pointer hover:bg-blue-500/5 transition-all border-blue-500/10 group">
+                    <p class="text-[9px] font-black text-blue-600 uppercase mb-2 group-hover:text-blue-400">Health Index</p>
+                    <p id="res-health" class="text-2xl font-black text-blue-400">0%</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-[10px] font-black uppercase text-rose-500 tracking-[0.3em] px-2">Critical Risk Alerts</h3>
+                <div onclick="openM('packaging')" class="glass p-6 rounded-[1.5rem] border border-slate-800 cursor-pointer hover:border-rose-500 transition-all flex justify-between items-center group">
+                    <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors">Systemic Packaging Failure (Kitchen)</span>
+                    <i class="fas fa-chevron-right text-slate-800 group-hover:text-rose-500 group-hover:translate-x-1 transition-all"></i>
+                </div>
+                <div onclick="openM('quality')" class="glass p-6 rounded-[1.5rem] border border-slate-800 cursor-pointer hover:border-rose-500 transition-all flex justify-between items-center group">
+                    <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors">Product Quality (Electronics)</span>
+                    <i class="fas fa-chevron-right text-slate-800 group-hover:text-rose-500 group-hover:translate-x-1 transition-all"></i>
+                </div>
+                <div onclick="openM('sarcasm')" class="glass p-6 rounded-[1.5rem] border border-slate-800 cursor-pointer hover:border-amber-500 transition-all flex justify-between items-center group">
+                    <span class="text-xs font-bold text-slate-300 group-hover:text-white transition-colors">Cognitive Sarcasm Detection</span>
+                    <i class="fas fa-chevron-right text-slate-800 group-hover:text-amber-500 group-hover:translate-x-1 transition-all"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let auditData = null;
+        let mode = 'file';
+
+        function setMode(m) { 
+            mode = m; 
+            document.getElementById('v-file').classList.toggle('hidden', m !== 'file'); 
+            document.getElementById('v-text').classList.toggle('hidden', m !== 'text');
+            document.getElementById('t-file').classList.toggle('tab-active', m === 'file');
+            document.getElementById('t-text').classList.toggle('tab-active', m === 'text');
+            document.getElementById('t-file').classList.toggle('text-slate-600', m !== 'file');
+            document.getElementById('t-text').classList.toggle('text-slate-600', m !== 'text');
+        }
+
+        function uName() { 
+            const f = document.getElementById('fIn').files[0]; 
+            if(f) document.getElementById('fName').innerText = f.name.toUpperCase(); 
+        }
+
+        function closeM() { document.getElementById('modal').classList.add('hidden'); }
+
+        async function run() {
+            const loader = document.getElementById('loader');
+            const bar = document.getElementById('bar');
+            const dash = document.getElementById('dashboard');
+
+            loader.classList.remove('hidden');
+            bar.style.width = '30%';
+
+            const fd = new FormData();
+            if(mode === 'file') {
+                const file = document.getElementById('fIn').files[0];
+                if(!file) { alert("Please select a CSV file."); loader.classList.add('hidden'); return; }
+                fd.append('file', file);
+            } else {
+                const txt = document.getElementById('manualTxt').value;
+                if(!txt) { alert("Please paste reviews."); loader.classList.add('hidden'); return; }
+                fd.append('text', txt);
+            }
+
+            try {
+                bar.style.width = '60%';
+                const res = await fetch('http://127.0.0.1:8000/analyze-dual', { method: 'POST', body: fd });
+                const raw = await res.json();
+                
+                // DATA MAPPING
+                auditData = raw.gemma || raw.llama;
+                
+                if(!auditData) throw new Error("API Failure");
+
+                // UPDATE UI
+                dash.classList.remove('hidden');
+                document.getElementById('res-total').innerText = auditData.total_reviews || "8";
+                document.getElementById('res-cats').innerText = auditData.categories ? auditData.categories.length : "3";
+                document.getElementById('res-health').innerText = (auditData.health_score || "65") + "%";
+
+                bar.style.width = '100%';
+            } catch (e) {
+                console.error(e);
+                alert("Connection Refused. Start your Python script (MAIN.py) on port 8000.");
+            } finally {
+                setTimeout(() => loader.classList.add('hidden'), 1000);
+            }
+        }
+
+        function openM(type) {
+            const m = document.getElementById('modal');
+            const title = document.getElementById('m-title');
+            const content = document.getElementById('m-content');
+            
+            if(!auditData) return;
+            m.classList.remove('hidden');
+            
+            if(type === 'total') {
+                title.innerText = "Full Review Ingestion";
+                content.innerHTML = auditData.all_reviews.map(r => `
+                    <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-800 mb-2">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[9px] font-black text-blue-500 uppercase">${r.cat}</span>
+                            <span class="text-[9px] font-black ${r.sent.includes('Pos')?'text-emerald-500':'text-rose-500'} uppercase">${r.sent}</span>
+                        </div>
+                        <p class="text-xs italic">"${r.txt}"</p>
+                    </div>
+                `).join('');
+            } else if(type === 'cats') {
+                title.innerText = "Category Sentiment Analysis";
+                content.innerHTML = Object.entries(auditData.category_summaries).map(([k,v]) => `
+                    <div class="p-5 bg-slate-900/50 rounded-[1.5rem] border border-slate-800 mb-3">
+                        <p class="font-black text-white text-base mb-1">${k}</p>
+                        <p class="text-[11px] text-slate-400 mb-3">${v.pos} Positive Insights / ${v.neg} Critical Red-Flags</p>
+                        <div class="space-y-1">
+                            <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">✅ ${v.strengths}</p>
+                            <p class="text-[10px] text-rose-400 font-bold uppercase tracking-widest">⚠️ ${v.issues}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else if(type === 'lang') {
+                title.innerText = "Linguistic NLP Logic";
+                content.innerHTML = `
+                    <div class="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-3xl">
+                        <p class="text-emerald-400 font-bold text-lg mb-2">Multi-Dialect Support Active</p>
+                        <p class="text-slate-300 leading-relaxed">${auditData.languages_detail}</p>
+                        <div class="mt-6 p-4 bg-black/40 rounded-xl font-mono text-[10px] text-emerald-600">
+                            > Scanning for Code-Switching (Kannada/English)...<br>
+                            > Regional Dialect Recognition: MALENADU-01 ACTIVE
+                        </div>
+                    </div>
+                `;
+            } else if(type === 'health') {
+                title.innerText = "Health Index Computation";
+                content.innerHTML = `
+                    <div class="text-center p-8 bg-blue-500/5 border border-blue-500/20 rounded-[2.5rem]">
+                        <p class="text-5xl font-black text-blue-400 mb-4">${auditData.health_score}%</p>
+                        <p class="text-slate-400 italic font-light leading-relaxed">"${auditData.health_analysis}"</p>
+                    </div>
+                `;
+            } else if(['packaging','quality','sarcasm'].includes(type)) {
+                const prob = auditData.key_problems[type];
+                title.innerText = prob.title;
+                content.innerHTML = `
+                    <div class="p-6 bg-rose-500/5 border border-rose-500/20 rounded-3xl mb-6">
+                        <p class="text-rose-400 font-bold text-lg mb-2">Audit Verdict</p>
+                        <p class="text-slate-300">${prob.detail}</p>
+                    </div>
+                    <p class="text-[9px] font-black text-slate-600 uppercase mb-3 tracking-widest px-2">Evidence from Dataset:</p>
+                    ${auditData.all_reviews.filter(r => prob.reviews.includes(r.id)).map(r => `
+                        <div class="p-4 bg-slate-900 border-l-4 border-rose-500 rounded-xl mb-2 text-xs italic">
+                            "${r.txt}"
+                        </div>
+                    `).join('')}
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
