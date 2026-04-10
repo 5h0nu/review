@@ -13,7 +13,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # --- CONFIGURATION ---
 # It is better to set this in Railway's "Variables" tab as NVIDIA_API_KEY
-API_KEY = os.environ.get("NVIDIA_API_KEY", "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")
+API_KEY = os.getenv("NVIDIA_API_KEY")
 INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 # THE MASTER PROMPT (Optimized for the Hackathon Audit Output)
