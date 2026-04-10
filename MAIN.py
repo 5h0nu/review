@@ -63,6 +63,6 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Railway sets the port; we listen on 0.0.0.0 to be public
-    port = int(os.environ.get("PORT", 8080))
+    # Change the fallback from 8080 to 8000
+    port = int(os.environ.get("PORT", 8000)) 
     app.run(host='0.0.0.0', port=port)
