@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # API CONFIG
-API_KEY = os.environ.get("NVIDIA_API_KEY", "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")
+API_KEY = os.environ["NVIDIA_API_KEY"]
 INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 AUDIT_LOGIC = """
@@ -63,6 +63,5 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Change the fallback from 8080 to 8000
-    port = int(os.environ.get("PORT", 8000)) 
+    port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port)
