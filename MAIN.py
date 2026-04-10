@@ -12,7 +12,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # API CONFIG
-API_KEY = os.environ["NVIDIA_API_KEY"]
+API_KEY = os.environ.get("NVIDIA_API_KEY")
+if not API_KEY:
+    raise RuntimeError("NVIDIA_API_KEY is not set")
 INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 AUDIT_LOGIC = """
