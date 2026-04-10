@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 app = Flask(__name__)
 CORS(app)
 
-API_KEY = "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"
+API_KEY = os.getenv("NVIDIA_API_KEY")
 INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 
 # THE MASTER PROMPT (Now includes Full Review Data for Popups)
