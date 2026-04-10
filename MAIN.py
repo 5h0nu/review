@@ -63,4 +63,8 @@ def analyze():
     }
     return jsonify({"gemma": test_data})
 if __name__ == '__main__':
-    app.run(debug=False, port=8000, host='127.0.0.1', threaded=True)
+    import os
+    # Railway provides the PORT variable automatically
+    port = int(os.environ.get("PORT", 8000))
+    # host MUST be 0.0.0.0 for public access on Railway
+    app.run(debug=False, host='0.0.0.0', port=port)
